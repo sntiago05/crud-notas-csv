@@ -3,11 +3,11 @@ import csv
 PATH = "estudiantes.csv"
 
 
-def buscar_por_id(id):
+def buscar_por_id(id: int):
     with open(PATH, newline="") as file:
         reader = csv.DictReader(file)
         for line in reader:
-            if int(line["id"].strip().lower()) == id.strip().lower():
+            if int(line["id"].strip().lower()) == id:
                 return line
         return None
 
@@ -41,12 +41,55 @@ def editar(id, nombre=None, materia=None, nota1=None, nota2=None, nota3=None):
                 if nota3 != None:
                     persona["nota3"] = nota3
             rows.append(persona)
-    if header is None:
-        header = ["id", "nombre", "materia", "nota1", "nota2", "nota3"]
+    set_header(header)
+    write_file(header, rows)
 
+
+def eliminar(id: int):
+    with open(PATH) as file:
+        reader = csv.DictReader(file)
+        header = reader.fieldnames
+        rows = []
+        for line in reader:
+            if int(line["id"]) == id:
+                continue
+            rows.append(line)
+    set_header()
+    write_file(header, rows)
+
+
+def write_file(header, rows):
     with open(PATH, "w") as file:
         writer = csv.DictWriter(file, fieldnames=header)
         writer.writeheader()
         writer.writerows(rows)
 
 
+def calcular_promedio_todos():
+    with open(PATH) as file:
+        reader = csv.DictReader(file)
+        for line in reader:
+            promedio = (
+                float(line["nota1"]) + float(line["nota2"]) + float(line["nota3"])
+            ) / 3
+            print(f"{line["id"]} - {line["nombre"]} - promedio: {promedio:.2f}")
+
+
+def calcular_promedio_id(id: int):
+    estudiante = buscar_por_id(id)
+    if estudiante is None:
+        return None
+    promedio = (
+        float(estudiante["nota1"])
+        + float(estudiante["nota2"])
+        + float(estudiante["nota3"])
+    ) / 3
+    return f"{estudiante['id']} -  nombre: {estudiante["nombre"]} - materia: {estudiante["materia"]} - promedio: {promedio:.2f}"
+
+
+print(calcular_promedio_id(1))
+
+
+def set_header(header):
+    if header is None:
+        header = ["id", "nombre", "materia", "nota1", "nota2", "nota3"]
